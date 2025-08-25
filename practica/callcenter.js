@@ -160,13 +160,20 @@ class CallCenter {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${titulo}</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+             <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet">
+              <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
         </head>
-        <body class="bg-light">
+        <body class="bg-secondary-subtle">
+            <nav class="navbar shadow-sm p-3 mb-5 rounded bg-secondary">
+                <div class="container-fluid">
+                    <span class="navbar-brand mb-0 h1">REPORTES DE CALLCENTER</span>
+                </div>
+            </nav>
             <div class="container mt-4">
-                <h2 class="text-center mb-4">${titulo}</h2>
-                <table class="table table-striped table-bordered">
-                    <thead class="table-dark">
+                <h2 class="text-center shadow-sm p-3 mb-5 bg-light">${titulo}</h2>
+                <table class="table table-hover">
+                    <thead class="table-secondary">
                         <tr>
                             ${encabezados.map(h => `<th>${h}</th>`).join("")}
                         </tr>
