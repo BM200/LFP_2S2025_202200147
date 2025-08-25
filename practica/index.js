@@ -29,19 +29,19 @@ function menu(){
                 menu();
                 break;
             case "2":
-                console.log(callcenter.historial());
+                callcenter.exportarHistorial();
                 menu();
                 break;
             case "3":
-                console.log(callcenter.listadoOperadores());
+                callcenter.exportarOperadores();
                 menu();
                 break;
             case "4":
-                console.log(callcenter.listadoClientes());
+                callcenter.exportarClientes();
                 menu();
                 break;
             case "5":
-                console.log(callcenter.rendimientoOperadores());
+                callcenter.exportarRendimiento();
                 menu();
                 break;
             case "6":

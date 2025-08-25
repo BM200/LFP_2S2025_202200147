@@ -1,3 +1,4 @@
+const fs = require("fs");
 // Clase Llamada
 
 class Llamada {
@@ -177,21 +178,22 @@ class CallCenter {
             </div>
         </body>
         </html>`;
-        fstat.writeFileSync(`./reportes/${nombreArchivo}.html`, html, "utf8");
+
+        fs.writeFileSync(`./reporte/${nombreArchivo}.html`, html, "utf8");
         console.log(`📝Reporte generado: reporte/${nombreArchivo}.html`);
     }
     //Reporte 2: Historial llamadas. 
     exportarHistorial(){
         const encabezados =["ID Operador", "Nombre Operador", "Estrellas", "ID Cliente", "Nombre Cliente" ];
-        const filas = this.llamadas.map(l=>[
-            l.idoperador, l.nombreOperador, l.estrellas, l.idCliente, l.nombreCliente
+        const filas = this.llamadas.map(l => [
+            l.idOperador, l.nombreOperador, l.estrellas, l.idCliente, l.nombreCliente
         ]);
         this.generarTablaHTML("Historial de Llamadas", encabezados, filas, "historial");
     }
     //reporte 3: listado de operadores
     exportarOperadores(){
         const encabezados=["ID Operador", "Nombre Operador"];
-        const filas = Object.values(this.operadores).map(o=> [o.id, o.nombre]);
+        const filas = Object.values(this.operadores).map(o => [o.id, o.nombre]);
         this.generarTablaHTML("Listado de Operadores", encabezados, filas, "operadores");
 
     }
@@ -200,14 +202,21 @@ class CallCenter {
     exportarClientes(){
         const encabezados = ["ID Cliente", "Nombre Cliente"];
         const filas = Object.values(this.clientes).map(c =>[c.id, c.nombre]);
-        this.generarTablaHTML("Listado de clientes", encabezados, filas, "clientes");
+        this.generarTablaHTML("Listado de Clientes", encabezados, filas, "clientes");
     
     }
     //Reporte 5 rendimiento de OPERADORES 
-    
-
-
+    exportarRendimiento(){
+        const total= this.llamadas.length;
+        const encabezados=["ID Operador", "Nombre Operador", "Rendimiento"];
+        const filas = Object.values(this.operadores).map(o =>[
+            o.id,
+            o.nombre, 
+            o.calcularRendimiento(total).toFixed(2) + "%"
+        ]);
+        this.generarTablaHTML("Rendimiento de Operadores", encabezados, filas, "rendimiento");
     }
+}
 
 
 
