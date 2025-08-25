@@ -1,0 +1,38 @@
+const graphviz = require("graphviz");
+
+// Crear el grafo dirigido
+const g = graphviz.digraph("G");
+
+// Clase Llamada
+const llamada = g.addNode("Llamada", {
+  shape: "record",
+  label: "{ Llamada | - idOperador : int \\l - nombreOperador : string \\l - estrellas : string \\l - idCliente : int \\l - nombreCliente : string \\l | + clasificacion() : string \\l }"
+});
+
+// Clase Operador
+const operador = g.addNode("Operador", {
+  shape: "record",
+  label: "{ Operador | - id : int \\l - nombre : string \\l - llamadas : Llamada[] \\l | + agregarLlamada(l:Llamada):void \\l + calcularRendimiento(total:int):float \\l }"
+});
+
+// Clase Cliente
+const cliente = g.addNode("Cliente", {
+  shape: "record",
+  label: "{ Cliente | - id : int \\l - nombre : string \\l - llamadas : Llamada[] \\l | + agregarLlamada(l:Llamada):void \\l }"
+});
+
+// Clase CallCenter
+const callCenter = g.addNode("CallCenter", {
+  shape: "record",
+  label: "{ CallCenter | - llamadas : Llamada[] \\l - operadores : dict \\l - clientes : dict \\l - cargado : boolean \\l - directorioSalida : string \\l | + cargarCSV(texto:string):void \\l + historial():Llamada[] \\l + listadoOperadores():Operador[] \\l + listadoClientes():Cliente[] \\l + rendimientoOperadores():Object \\l + porcentajeClasificacion():Object \\l + cantidadPorCalificacion():Object \\l + exportarHistorial():void \\l + exportarOperadores():void \\l + exportarClientes():void \\l + exportarRendimiento():void \\l + generarTablaHTML(titulo,encabezados,filas):string \\l + guardarReporte(nombre,html):void \\l }"
+});
+
+// Relaciones
+g.addEdge(callCenter, llamada, { label: "1..*" });
+g.addEdge(callCenter, operador, { label: "1..*" });
+g.addEdge(callCenter, cliente, { label: "1..*" });
+g.addEdge(operador, llamada, { label: "0..*" });
+g.addEdge(cliente, llamada, { label: "0..*" });
+
+// Exportar el diagrama
+g.output("png", "diagrama_clases_callcenter.png");

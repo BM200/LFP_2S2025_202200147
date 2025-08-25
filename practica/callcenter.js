@@ -1,6 +1,7 @@
 const fs = require("fs");
-// Clase Llamada
+const path = require("path");
 
+// Clase Llamada
 class Llamada {
     constructor(idOperador, nombreOperador, estrellas, idCliente, nombreCliente) {
         this.idOperador = idOperador;
@@ -60,14 +61,44 @@ class CallCenter {
         this.llamadas = [];
         this.operadores = {};
         this.clientes = {};
+        this.cargado = false;  //nos servira para ver si el archivo ya esta cargado o no. 
+        this.directorioSalida = "./reportes";
     }
 
+    // =======================
+    // Crear directorio si no existe
+    // =======================
+    crearDirectorioSalida() {
+        if (!fs.existsSync(this.directorioSalida)) {
+            fs.mkdirSync(this.directorioSalida, { recursive: true });
+            console.log(`📂 Directorio creado: ${this.directorioSalida}`);
+        }
+    }
+ // =======================
+    // Guardar reporte con ID único del reporte. 
+    // =======================
+    guardarReporte(nombreBase, html) {
+        this.crearDirectorioSalida();
+        const nombreArchivo = `${nombreBase}_${Date.now()}.html`; // ID único
+        const rutaCompleta = path.join(this.directorioSalida, nombreArchivo);
+
+        fs.writeFileSync(rutaCompleta, html, "utf8");
+        console.log(`✅ Reporte guardado en: ${rutaCompleta}`);
+        return rutaCompleta;
+    }
     // Cargar registros desde .csv (cadena ya leída)
     cargarCSV(texto) {
+
+        this.llamadas = [];
+        this.operadores ={};
+        this.clientes = {};
+
         const lineas = texto.trim().split("\n");
 
         for (let i = 1; i < lineas.length; i++) { // ignorar cabecera
             const fila = lineas[i].split(",");
+
+            if (fila.length < 5) continue;
 
             let idOperador = fila[0].trim();
             let nombreOperador = fila[1].trim();
@@ -77,10 +108,11 @@ class CallCenter {
 
             // Contar "x" para estrellas
             let estrellasPartes = estrellasCadena.split(";");
+            //let estrellas = estrellasPartes.filter(e => e ==="x".length);
             let estrellas = 0;
             for (let valor of estrellasPartes) {
-                if (valor === "x") estrellas++;
-            }
+              if (valor === "x") estrellas++;
+            }   
 
             const llamada = new Llamada(idOperador, nombreOperador, estrellas, idCliente, nombreCliente);
             this.llamadas.push(llamada);
@@ -97,6 +129,8 @@ class CallCenter {
             }
             this.clientes[idCliente].agregarLlamada(llamada);
         }
+        this.cargado = true; // confirma si esta cargado el archivo.
+        //console.log(" ARCHIVO CSV cargado en memoria.")
     }
 
     // Reportes básicos
@@ -152,8 +186,8 @@ class CallCenter {
         return conteo; 
     }
 
-    generarTablaHTML(titulo, encabezados, filas, nombreArchivo){
-        const html = `
+    generarTablaHTML(titulo, encabezados, filas){
+        return `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -186,34 +220,41 @@ class CallCenter {
         </body>
         </html>`;
 
-        fs.writeFileSync(`./reporte/${nombreArchivo}.html`, html, "utf8");
-        console.log(`📝Reporte generado: reporte/${nombreArchivo}.html`);
+      //  fs.writeFileSync(`./reporte/${nombreArchivo}.html`, html, "utf8");
+       // console.log(`📝Reporte generado: reporte/${nombreArchivo}.html`);
     }
     //Reporte 2: Historial llamadas. 
     exportarHistorial(){
+
+        if(!this.cargado) return console.log("Primero debe cargar el archivo de llamadas.CSV");
         const encabezados =["ID Operador", "Nombre Operador", "Estrellas", "ID Cliente", "Nombre Cliente" ];
         const filas = this.llamadas.map(l => [
             l.idOperador, l.nombreOperador, l.estrellas, l.idCliente, l.nombreCliente
         ]);
-        this.generarTablaHTML("Historial de Llamadas", encabezados, filas, "historial");
+
+        const html= this.generarTablaHTML("Historial de Llamadas", encabezados, filas);
+        this.guardarReporte("historial", html);
     }
     //reporte 3: listado de operadores
     exportarOperadores(){
+         if(!this.cargado) return console.log("Primero debe cargar el archivo de llamadas.CSV");
         const encabezados=["ID Operador", "Nombre Operador"];
         const filas = Object.values(this.operadores).map(o => [o.id, o.nombre]);
-        this.generarTablaHTML("Listado de Operadores", encabezados, filas, "operadores");
-
+        const html = this.generarTablaHTML("Listado de Operadores", encabezados, filas, "operadores");
+        this.guardarReporte("operadores", html);
     }
 
     //reporte 4: listado de clientes. 
     exportarClientes(){
+        if (!this.cargado) return console.log("⚠️ Primero debe cargar el archivo CSV.");
         const encabezados = ["ID Cliente", "Nombre Cliente"];
         const filas = Object.values(this.clientes).map(c =>[c.id, c.nombre]);
-        this.generarTablaHTML("Listado de Clientes", encabezados, filas, "clientes");
-    
+       const html = this.generarTablaHTML("Listado de Clientes", encabezados, filas, "clientes");
+        this.guardarReporte("clientes", html);
     }
     //Reporte 5 rendimiento de OPERADORES 
     exportarRendimiento(){
+        if (!this.cargado) return console.log("⚠️ Primero debe cargar el archivo CSV.");
         const total= this.llamadas.length;
         const encabezados=["ID Operador", "Nombre Operador", "Rendimiento"];
         const filas = Object.values(this.operadores).map(o =>[
@@ -221,7 +262,8 @@ class CallCenter {
             o.nombre, 
             o.calcularRendimiento(total).toFixed(2) + "%"
         ]);
-        this.generarTablaHTML("Rendimiento de Operadores", encabezados, filas, "rendimiento");
+        const html = this.generarTablaHTML("Rendimiento de Operadores", encabezados, filas, "rendimiento");
+        this.guardarReporte("rendimiento", html);
     }
 }
 
